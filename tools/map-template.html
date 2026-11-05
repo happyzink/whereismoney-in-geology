@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>钱在哪里 · 交互版全景地图</title>
+<style>
+:root{
+  --bg:#0f1216; --panel:#161b22; --panel2:#1c232c; --line:#283039;
+  --ink:#e6edf3; --dim:#8b949e; --gold:#d9a742; --green:#3fb950; --blue:#58a6ff; --red:#f85149;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--ink);line-height:1.6}
+header{padding:28px 24px 18px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#141a21,#0f1216)}
+h1{margin:0 0 6px;font-size:22px;letter-spacing:.5px}
+h1 span{color:var(--gold)}
+.sub{color:var(--dim);font-size:13px}
+.bar{display:flex;flex-wrap:wrap;gap:10px;padding:14px 24px;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(15,18,22,.96);backdrop-filter:blur(6px);z-index:9}
+.bar label{font-size:12px;color:var(--dim);align-self:center;margin-right:2px}
+.chip{cursor:pointer;user-select:none;font-size:12.5px;padding:5px 12px;border:1px solid var(--line);border-radius:999px;background:var(--panel);color:var(--ink);transition:.15s}
+.chip:hover{border-color:var(--gold)}
+.chip.on{background:var(--gold);color:#171102;border-color:var(--gold);font-weight:600}
+input[type=search]{flex:1;min-width:180px;padding:7px 12px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font-size:13px;outline:none}
+input[type=search]:focus{border-color:var(--gold)}
+main{padding:18px 24px 60px;max-width:1400px;margin:0 auto}
+.axis{display:flex;gap:14px;margin-bottom:16px;flex-wrap:wrap}
+.axis .card{flex:1;min-width:260px;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:10px;padding:12px 14px}
+.axis .card h3{margin:0 0 4px;font-size:13px;color:var(--gold)}
+.axis .card p{margin:0;font-size:12px;color:var(--dim)}
+h2{font-size:15px;margin:26px 0 10px;padding-left:10px;border-left:3px solid var(--gold);letter-spacing:.5px}
+h2 em{font-style:normal;color:var(--dim);font-size:12px;font-weight:400;margin-left:8px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.item{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:13px 15px;transition:.15s;display:flex;flex-direction:column}
+.item:hover{border-color:var(--gold);transform:translateY(-1px)}
+.item .top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
+.id{font-family:Consolas,monospace;font-size:11.5px;color:#171102;background:var(--gold);padding:1px 7px;border-radius:5px;font-weight:700}
+.phase{font-size:11px;color:var(--dim);border:1px solid var(--line);padding:1px 7px;border-radius:5px}
+.item h4{margin:0 0 6px;font-size:14.5px;line-height:1.4}
+.one{font-size:12.5px;color:#c9d1d9;margin:0 0 9px}
+.nums{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.nums span{font-size:11.5px;color:var(--blue);background:rgba(88,166,255,.09);border:1px solid rgba(88,166,255,.22);padding:1px 7px;border-radius:5px}
+.money{display:flex;gap:5px;margin-bottom:9px}
+.money b{font-size:11px;font-weight:500;padding:1px 7px;border-radius:5px;border:1px solid}
+.m-公司{color:var(--gold);border-color:rgba(217,167,66,.4);background:rgba(217,167,66,.08)}
+.m-股东{color:var(--green);border-color:rgba(63,185,80,.4);background:rgba(63,185,80,.08)}
+.m-打工人{color:var(--red);border-color:rgba(248,81,73,.4);background:rgba(248,81,73,.08)}
+.item a{margin-top:auto;font-size:12px;color:var(--dim);text-decoration:none;border-top:1px dashed var(--line);padding-top:8px}
+.item a:hover{color:var(--gold)}
+.hide{display:none!important}
+#count{font-size:12px;color:var(--dim);align-self:center;margin-left:auto}
+footer{border-top:1px solid var(--line);padding:16px 24px 40px;color:var(--dim);font-size:12px;max-width:1400px;margin:0 auto}
+</style>
+</head>
+<body>
+<header>
+  <h1>钱在哪里 · <span>交互版全景地图</span></h1>
+  <div class="sub">26 期 ｜ 三种口袋分开报账 ｜ 全部按两轮红队修正后的口径 ｜ 2026-11</div>
+</header>
+
+<div class="bar">
+  <label>口袋</label>
+  <span class="chip on" data-type="money" data-v="公司">公司的钱</span>
+  <span class="chip on" data-type="money" data-v="股东">股东的钱</span>
+  <span class="chip on" data-type="money" data-v="打工人">打工人的钱</span>
+  <label style="margin-left:10px">需求</label>
+  <span class="chip" data-type="tag" data-v="选行">我在找工作</span>
+  <span class="chip" data-type="tag" data-v="高薪">想涨薪</span>
+  <span class="chip" data-type="tag" data-v="投资">做投资</span>
+  <span class="chip" data-type="tag" data-v="副业">做副业</span>
+  <span class="chip" data-type="tag" data-v="决策">做决策</span>
+  <span class="chip" data-type="tag" data-v="审查">看结论强度</span>
+  <input type="search" id="q" placeholder="搜索：铜 / 期权 / 转化率 / 银行 / 博士…">
+  <span id="count"></span>
+</div>
+
+<main>
+  <div class="axis">
+    <div class="card"><h3>纵轴 · 三种钱</h3><p>公司的钱＝成本曲线与牌照租金；股东的钱＝自由现金流与周期；打工人的钱＝稀缺度与期权。三者不可混算。</p></div>
+    <div class="card"><h3>横轴 · 26 期索引</h3><p>行业 9 期（E00-E08）→ 模式 6 期（M01-M06）→ 个人 4 期（P01-P04）→ 定位 2 期（D01-D02）→ 总装 1 期（Z01）→ 增补 4 期。</p></div>
+    <div class="card"><h3>用法</h3><p>先点「我想干什么」，再看剩下的卡片；每张卡的一行结论都可追溯到原期成稿的 [^id] 脚注。</p></div>
+  </div>
+  <div id="list"></div>
+</main>
+
+<footer>
+  数据源：成稿/ 下 26 期 Markdown（同目录 docx 版可打印）。排序与筛选均为前端实时计算。红队修正口径见第 24、26 期。
+</footer>
+
+<script>
+const DATA = __DATA__;
+const state = {money:new Set(["公司","股东","打工人"]), tag:null, q:""};
+const listEl = document.getElementById("list");
+const countEl = document.getElementById("count");
+
+const PHASE_ORDER = ["行业","模式","个人","定位","总装","增补"];
+const PHASE_DESC = {行业:"9 期 · 利润池在哪里",模式:"6 期 · 印钞机怎么运作",个人:"4 期 · 我能拿多少",定位:"2 期 · 我该做什么",总装:"1 期 · 全景裁决",增补:"4 期 · 数据更新与红队"};
+
+function match(d){
+  if(!d.money.some(m=>state.money.has(m))) return false;
+  if(state.tag && !d.tags.includes(state.tag)) return false;
+  if(state.q){
+    const hay = (d.id+" "+d.title+" "+d.one+" "+d.nums.join(" ")+" "+d.tags.join(" ")).toLowerCase();
+    if(!hay.includes(state.q.toLowerCase())) return false;
+  }
+  return true;
+}
+
+function render(){
+  const shown = DATA.filter(match);
+  countEl.textContent = shown.length + " / " + DATA.length + " 期";
+  let html = "";
+  PHASE_ORDER.forEach(ph=>{
+    const rows = shown.filter(d=>d.phase===ph);
+    if(!rows.length) return;
+    html += `<h2>${ph}篇<em>${PHASE_DESC[ph]}</em></h2><div class="grid">`;
+    rows.forEach(d=>{
+      html += `<div class="item">
+        <div class="top"><span class="id">${d.id}</span><span class="phase">${d.phase}</span></div>
+        <h4>${d.title}</h4>
+        <p class="one">${d.one}</p>
+        <div class="nums">${d.nums.map(n=>`<span>${n}</span>`).join("")}</div>
+        <div class="money">${d.money.map(m=>`<b class="m-${m}">${m}</b>`).join("")}</div>
+        <a href="../成稿/${encodeURI(d.file)}" target="_blank">打开原稿 →</a>
+      </div>`;
+    });
+    html += `</div>`;
+  });
+  listEl.innerHTML = html || `<h2>没有匹配的期<em>放宽筛选试试</em></h2>`;
+}
+
+document.querySelectorAll(".chip").forEach(c=>{
+  c.addEventListener("click",()=>{
+    const t = c.dataset.type, v = c.dataset.v;
+    if(t==="money"){
+      if(state.money.has(v)){ if(state.money.size>1){ state.money.delete(v); c.classList.remove("on"); } }
+      else { state.money.add(v); c.classList.add("on"); }
+    } else {
+      const was = c.classList.contains("on");
+      document.querySelectorAll('[data-type=tag]').forEach(x=>x.classList.remove("on"));
+      state.tag = was ? null : v;
+      if(!was) c.classList.add("on");
+    }
+    render();
+  });
+});
+document.getElementById("q").addEventListener("input", e=>{ state.q = e.target.value.trim(); render(); });
+render();
+</script>
+</body>
+</html>
