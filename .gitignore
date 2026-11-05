@@ -3,3 +3,8 @@
 .DS_Store
 Thumbs.db
 ~$*.docx
+# 本地凭据与临时文件（绝不入库）
+.ghtoken
+.ghdevice.json
+.ghpoll.log
+.gh_device.py
